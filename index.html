@@ -711,6 +711,27 @@
   .snd-btn { width:30px; height:30px; flex-shrink:0; }
   @media (max-width: 380px) { .brand { font-size:1rem; } .rw-pill { padding:5px 9px; } .topbar-left { gap:6px; } }
   .snd-credit { font-size:.72rem; color:var(--muted); margin:6px 0 0; text-align:right; }
+  /* ===== 英語：訳・発音 ===== */
+  .pt-tag.tr { background:var(--math); color:#fff; }
+  .pt-ja { font-weight:500; font-size:.88rem; }
+  .say-btn { display:inline-flex; align-items:center; gap:6px; margin:6px 0 2px; padding:5px 12px; border-radius:999px; border:2px solid var(--text); background:var(--gold-soft); color:var(--text); font-family:inherit; font-weight:700; font-size:.8rem; cursor:pointer; box-shadow:2px 2px 0 var(--text); }
+  .say-btn:active { transform:translate(2px,2px); box-shadow:none; }
+  .say-ic { width:16px; height:16px; display:inline-flex; }
+  .say-ic svg { width:100%; height:100%; }
+  /* ===== 幅のせまいスマホ（Android など 360px） ===== */
+  .result-card { overflow:hidden; }
+  @media (max-width: 370px) {
+    .hero { padding:11px 12px; margin-bottom:10px; }
+    .hero-char { width:96px; }
+    .bubble { margin-bottom:10px; }
+    .bubble p { font-size:.8rem; line-height:1.55; }
+    .world-list { gap:8px; }
+    .world-card { padding:8px 12px; }
+    .world-icon { width:50px; height:50px; }
+    .world-icon svg { left:-7px; top:-7px; width:64px; height:64px; }
+    .world-info p { font-size:.74rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .world-progress { margin-top:3px; }
+  }
 </style>
 </head>
 <body>
@@ -908,6 +929,74 @@
       if (X && X[i]) X[i].forEach(function (q) { st.questions.push(q); });
     });
   });
+  // 英語：読み上げる英文（say）と日本語訳（ja）。単語ステージは答えの単語を読み上げる
+  var EN_SAY = {"I ___ a student.": ["I am a student.", "わたしは生徒です。"],
+    "She ___ happy.": ["She is happy.", "彼女は幸せです。"],
+    "They ___ friends.": ["They are friends.", "彼らは友達です。"],
+    "___ you a teacher?": ["Are you a teacher?", "あなたは先生ですか。"],
+    "He ___ not busy.": ["He is not busy.", "彼は忙しくありません。"],
+    "I ___ soccer every day.": ["I play soccer every day.", "わたしは毎日サッカーをします。"],
+    "She ___ music.": ["She likes music.", "彼女は音楽が好きです。"],
+    "We ___ TV after dinner.": ["We watch TV after dinner.", "わたしたちは夕食のあとにテレビを見ます。"],
+    "He ___ to school by bike.": ["He goes to school by bike.", "彼は自転車で学校に行きます。"],
+    "They ___ English.": ["They study English.", "彼らは英語を勉強します。"],
+    "\"Do you like cats?\" への答えは?": ["Do you like cats? Yes, I do.", "「あなたはネコが好きですか。」「はい、好きです。」"],
+    "「彼は忙しくない」を英語にすると?": ["He is not busy.", "彼は忙しくありません。"],
+    "\"You are hungry.\" を疑問文にすると?": ["Are you hungry?", "あなたはおなかがすいていますか。"],
+    "She doesn't ___ coffee.": ["She doesn't like coffee.", "彼女はコーヒーが好きではありません。"],
+    "\"Does he play soccer?\" への答えは?": ["Does he play soccer? Yes, he does.", "「彼はサッカーをしますか。」「はい、します。」"],
+    "You ___ my friend.": ["You are my friend.", "あなたはわたしの友達です。"],
+    "He ___ a doctor.": ["He is a doctor.", "彼は医者です。"],
+    "We ___ in the same class.": ["We are in the same class.", "わたしたちは同じクラスです。"],
+    "This ___ my bag.": ["This is my bag.", "これはわたしのかばんです。"],
+    "I ___ from Tokyo.": ["I am from Tokyo.", "わたしは東京の出身です。"],
+    "Tom ___ tall.": ["Tom is tall.", "トムは背が高いです。"],
+    "It ___ sunny today.": ["It is sunny today.", "今日は晴れています。"],
+    "My sister ___ kind.": ["My sister is kind.", "わたしの姉（妹）は親切です。"],
+    "Ken and I ___ good friends.": ["Ken and I are good friends.", "ケンとわたしは仲のよい友達です。"],
+    "The dogs ___ cute.": ["The dogs are cute.", "その犬たちはかわいいです。"],
+    "___ she a student?": ["Is she a student?", "彼女は生徒ですか。"],
+    "I ___ not hungry.": ["I am not hungry.", "わたしはおなかがすいていません。"],
+    "They ___ not at home.": ["They are not at home.", "彼らは家にいません。"],
+    "\"Are you a student?\" への答えは?": ["Are you a student? Yes, I am.", "「あなたは生徒ですか。」「はい、そうです。」"],
+    "\"Is this your pen?\" への答えは?": ["Is this your pen? Yes, it is.", "「これはあなたのペンですか。」「はい、そうです。」"],
+    "You ___ tennis well.": ["You play tennis well.", "あなたは上手にテニスをします。"],
+    "I ___ a dog.": ["I have a dog.", "わたしは犬を飼っています。"],
+    "They ___ in Osaka.": ["They live in Osaka.", "彼らは大阪に住んでいます。"],
+    "He ___ baseball.": ["He plays baseball.", "彼は野球をします。"],
+    "My mother ___ coffee.": ["My mother likes coffee.", "わたしの母はコーヒーが好きです。"],
+    "We ___ English every day.": ["We study English every day.", "わたしたちは毎日英語を勉強します。"],
+    "Yuki ___ the piano.": ["Yuki plays the piano.", "ユキはピアノをひきます。"],
+    "You and Ken ___ fast.": ["You and Ken run fast.", "あなたとケンは速く走ります。"],
+    "She ___ TV every night.": ["She watches TV every night.", "彼女は毎晩テレビを見ます。"],
+    "He ___ his homework after dinner.": ["He does his homework after dinner.", "彼は夕食のあとに宿題をします。"],
+    "My father ___ a new car.": ["My father has a new car.", "わたしの父は新しい車を持っています。"],
+    "Emi ___ math.": ["Emi studies math.", "エミは数学を勉強します。"],
+    "Tom ___ his hands.": ["Tom washes his hands.", "トムは手を洗います。"],
+    "He ___ with his friends.": ["He plays with his friends.", "彼は友達と遊びます。"],
+    "My parents ___ in Kyoto.": ["My parents live in Kyoto.", "わたしの両親は京都に住んでいます。"],
+    "___ you like music?": ["Do you like music?", "あなたは音楽が好きですか。"],
+    "I ___ not play soccer.": ["I do not play soccer.", "わたしはサッカーをしません。"],
+    "\"Do you have a pen?\" への答えは?": ["Do you have a pen? No, I don't.", "「あなたはペンを持っていますか。」「いいえ、持っていません。」"],
+    "\"This is a pen.\" を疑問文にすると?": ["Is this a pen?", "これはペンですか。"],
+    "\"I am busy.\" を否定文にすると?": ["I am not busy.", "わたしは忙しくありません。"],
+    "\"You play the guitar.\" を疑問文にすると?": ["Do you play the guitar?", "あなたはギターをひきますか。"],
+    "We ___ like carrots.": ["We don't like carrots.", "わたしたちはにんじんが好きではありません。"],
+    "\"Is he your brother?\" への答えは?": ["Is he your brother? Yes, he is.", "「彼はあなたの兄（弟）ですか。」「はい、そうです。」"],
+    "___ she play tennis?": ["Does she play tennis?", "彼女はテニスをしますか。"],
+    "He ___ like milk.": ["He doesn't like milk.", "彼は牛乳が好きではありません。"],
+    "\"Does Ken live here?\" への答えは?": ["Does Ken live here? No, he doesn't.", "「ケンはここに住んでいますか。」「いいえ、住んでいません。」"],
+    "\"She speaks English.\" を疑問文にすると?": ["Does she speak English?", "彼女は英語を話しますか。"],
+    "\"Tom has a bike.\" を否定文にすると?": ["Tom doesn't have a bike.", "トムは自転車を持っていません。"],
+    "My sister ___ not watch TV.": ["My sister does not watch TV.", "わたしの姉（妹）はテレビを見ません。"],
+    "Does your mother ___ tea?": ["Does your mother drink tea?", "あなたのお母さんは紅茶を飲みますか。"]};
+  WORLDS[1].stages.forEach(function (st, i) {
+    st.questions.forEach(function (q) {
+      var d = EN_SAY[q.q];
+      if (d) { q.say = d[0]; q.ja = d[1]; }
+      else if (i === 3) q.say = q.choices[q.answer];
+    });
+  });
 
   /* ---------------- Paint splat generator ---------------- */
   function rng(seed) {
@@ -1084,9 +1173,11 @@
     "490/v/3": ["敬語の注意点と練習", "490/v/5", "14:22"]
   };
   function getPt(q) { return q ? (POINTS[q._id] || q.pt || null) : null; }
-  function pointHtml(pt, withApply) {
+  function pointHtml(pt, withApply, q) {
     var h = '<div class="pt"><span class="pt-tag">ポイント</span><span class="pt-body">' + pt.point + '</span></div>';
     if (withApply) h += '<div class="pt"><span class="pt-tag ap">この問題</span><span class="pt-body">' + pt.apply + '</span></div>';
+    if (withApply && q && q.ja) h += '<div class="pt"><span class="pt-tag tr">訳</span><span class="pt-body pt-ja">' + esc(q.ja) + '</span></div>';
+    if (withApply && q && q.say && window.speechSynthesis) h += '<button class="say-btn" data-say="' + esc(q.say) + '"><span class="say-ic">' + SPK_ON + '</span>発音を聞く</button>';
     if (withApply && pt.video) {
       var pr = PRACTICE[pt.video[1]];
       h += '<div class="pt-videos"><a class="pt-video" title="' + esc(pt.video[0]) + '" href="' + EB + pt.video[1] + '/" target="_blank" rel="noopener noreferrer"><span class="video-ic">' + PLAY_SVG + '</span>授業動画（考え方）' + pt.video[2] + '</a>';
@@ -1598,7 +1689,7 @@
         '<div class="fb-char">' + charImg(isCorrect ? "smile" : "guts", isCorrect ? "happy" : "cheer") + '</div><div class="fb-body">' +
         '<div class="fb-title">' + line + '</div>' +
         (!isCorrect && !fpt ? '<div class="fb-answer">こたえ：<b>' + esc(qData.choices[qData.answer]) + '</b></div>' : '') +
-        '<div class="fb-explain">' + (fpt ? pointHtml(fpt, true) : esc(qData.explain)) + '</div>' +
+        '<div class="fb-explain">' + (fpt ? pointHtml(fpt, true, qData) : esc(qData.explain)) + '</div>' +
       '</div></div>' +
       '<div class="fb-actions">' +
         '<button class="next-btn" id="btn-next">' + (isFinal ? '結果を見る' : '次へ') + '</button>' +
@@ -1813,7 +1904,7 @@
     var npt = getPt(q);
     if (npt) {
       var ly = sheetHost("look-layer", "howto-layer");
-      ly.innerHTML = '<div class="save-card look-card"><h3>解き方</h3><div class="qd-q">' + esc(q.q) + '</div>' + pointHtml(npt, true) +
+      ly.innerHTML = '<div class="save-card look-card"><h3>解き方</h3><div class="qd-q">' + esc(q.q) + '</div>' + pointHtml(npt, true, q) +
         '<div class="save-actions" style="margin-top:12px"><button class="btn-secondary" id="qd-back">' + (back ? 'リストへもどる' : 'とじる') + '</button></div></div>';
       var closeP = function () { removeEl("look-layer"); if (back) back(); };
       document.getElementById("qd-back").addEventListener("click", closeP);
@@ -2205,8 +2296,44 @@
     layer.onclick = function (e) { if (e.target === layer) removeEl("look-layer"); };
   }
 
+  /* ================= 英語の読み上げ（端末の読み上げ機能・無料） ================= */
+  function speak(text) {
+    var ss = window.speechSynthesis; if (!ss) return;
+    ss.cancel();
+    var u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 0.85;
+    var vs = ss.getVoices().filter(function (v) { return /^en(-|_)US/i.test(v.lang); });
+    if (vs.length) u.voice = vs[0];
+    ss.speak(u);
+  }
+  if (window.speechSynthesis) window.speechSynthesis.getVoices();
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-say]");
+    if (b) { e.preventDefault(); speak(b.getAttribute("data-say")); }
+  });
+
+  /* ================= 記録の保存についてのお知らせ =================
+     Safari のプライベートブラウズなどでは、閉じると記録が消える（自動では見分けられない）。
+     記録がまだないときに1回だけ知らせる。保存できない状態なら毎回知らせる */
+  var NOTICE_KEY = "manabi-quest-notice-v1";
+  function storageOK() { try { localStorage.setItem("mq-test", "1"); localStorage.removeItem("mq-test"); return true; } catch (e) { return false; } }
+  function showSaveNotice() {
+    var ok = storageOK();
+    if (ok && loadJSON(NOTICE_KEY, false)) return;
+    var fresh = !(state.stats && state.stats.clears);
+    if (ok && !fresh) return;
+    var layer = sheetHost("look-layer", "howto-layer");
+    layer.innerHTML = '<div class="save-card look-card"><h3>' + (ok ? '記録を残すために' : '記録が保存できないよ') + '</h3>' +
+      '<p>' + (ok ? '' : 'いまの開き方だと、レベルやクリアの記録が保存されないみたい。<br>') +
+      '<b>プライベートブラウズ</b>（Safari のアドレスバーが黒っぽいとき）で開くと、<b>閉じたときに記録が消えちゃう</b>よ。<br>ふつうのモードの Safari や Chrome で開いてね。</p>' +
+      '<p class="snd-credit" style="text-align:left">ホーム画面に追加しておくと、すぐ開けて便利だよ。</p>' +
+      '<div class="save-actions" style="margin-top:10px"><button class="btn-primary" id="notice-ok">わかった！</button></div></div>';
+    document.getElementById("notice-ok").addEventListener("click", function () { saveJSON(NOTICE_KEY, true); removeEl("look-layer"); });
+  }
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
   paintBackground();
   render();
+  showSaveNotice();
 })();
 </script>
 </body>
